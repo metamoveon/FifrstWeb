@@ -1,2 +1,2 @@
 # FifrstWeb
-Python Web Development
+Python Django Web Development

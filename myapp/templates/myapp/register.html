@@ -1,0 +1,50 @@
+{%  extends "myapp/base.html" %}
+{% block title %}สมัครสมาชิก{% endblock title %}
+
+
+{% block content %}
+
+
+{% if success %}
+<br><br>
+<div class="alert alert-success" role="alert">
+    คุณได้สมัครสมาชิกเรียบร้อยแล้ว
+  </div>
+{% else %}
+  {% if usertaken %}
+    <div class="alert alert-warning" role="alert">
+        email นี้ได้ถูกใช้งานแล้ว กรุณากรอกข้อมูลใหม่
+    </div>
+  {% endif %}
+
+
+<br><br>
+    <h2>สมัครสมาชิก</h2>
+
+    <div class="container text-left"> 
+        <form method="POST"> 
+            {% csrf_token %} 
+
+            <div class="form-group">
+                <label for="name">ชื่อ-สกุล</label>
+                <input type="text" class="form-control" id="name" name="name">
+            </div><br>
+
+            <div class="form-group">
+                <label for="email">email</label>
+                <input type="text" class="form-control" id="email" name="email">
+            </div><br>
+
+            <div class="form-group">
+                <label for="password">password</label>
+                <input type="password" class="form-control" id="password" name="password">
+            </div><br>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+{% endif %}
+
+{% endblock content %}
+  

@@ -1,0 +1,268 @@
+{%  extends "myapp/base.html" %}
+
+{% load static %}
+
+{% block title %}บางโพการท่องเที่ยว -สินค้า{% endblock title %}
+
+{% block content %}
+
+{% if user.is_authenticated and user.profile.usertype == 'vip' and user.discount.active == False %}
+
+<br><br>
+<div class = 'container'>
+  <div class="alert alert-primary" role="alert">
+    คุณได้รับ <a href="{% url 'discoutn' %}" class="alert-link">ส่วนลดพิเศษ</a> ลด 10%
+  </div>
+</div>
+
+{% endif %}
+
+<div class='pricing-header p-3 pb-md-4 mx-auto text-center'>
+    <h1 class='display-4 fw-normal text-body-white'>สินค้าทั้งหมด</h1>
+    <p class='fs-5 text-body-white'>ร้านขายของ uncle</p>
+</div>
+  <div class='row row-cols-1 row-cols-md-3 mb-3 text-left'>
+    {% for product in all_product %}
+    <div class='col'>
+
+      <div class='card mb-4 rounded-3 shadow-sm'>
+        <div class='card-header py-3'>
+            {% if product.images %}
+            <img class='bd-placeholder-img card-img-top' width='100%' height='225' style='object-fit:cover;'>
+            {% else %}
+              <p>ไม่มีรูป</p>
+            {% endif %} 
+        </div>
+        <div class='card-body'>
+          <h5 class='card-title pricing-card-title'>ราคา{{ product.price1 }}<small class='text-body-secondary fw-light'>/THB</small></h5>
+          <ul class='list-unstyled mt-3 mb-4'>
+            <li>{{ product.name }}</li>
+            <li>หมวดหมู่ {{ product.category.category_name }}</li>
+            <li>จำนวน {{ product.quantity }}<small class='text-body-secondary fw-light'< {{ prodcut.unit }}</small></li>
+          </ul>
+
+          <div class='text-right'>
+            {% if user.is_authenticated and user.profile.usertype == 'memeber' %}
+              <a href='{% url 'add-to-cart' product.id %}'><button type='button' class='btn btn-sm btn-outline-primary'>เพิ่มไปยังรถเข็น</button></a>
+              <a href='{% url 'product-detail' product.slug %}'><button type='button' class='btn btn-sm btn-primary'>สั่งซื้อ</button></a>
+            {% else %}
+              <a href='{% url 'login' %}'><button type='button' class='btn btn-sm btn-danger'>ไปที่หน้าล็อคอิน</button></a>
+            {% endif %}
+          </div>
+          
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+{% endblock content  %}
+
+{% comment %} <div style="padding-top: 100px;"></div>
+	<form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+		{% csrf_token %}
+        <div class="card">
+          <div class="row no-gutters">
+              <aside class="col-md-6">
+              <article class="gallery-wrap"> 
+                  <div class="img-big-wrap">
+                    <a href="#"><img src="{{ product.images.url }}" style="object-fit: cover; "></a>
+                  </div> 
+              </article> 
+              </aside>
+              <main class="col-md-6 border-left">
+                <article class="content-body text-left" style="padding: 20px;">
+                
+                <p class="price h4">{{ product.name }}</p> 	
+                
+                <div class="mb-3">
+		<h2 class="title">{{ product.introduction }}</h2>
+		<br>
+                    {% if price_1 %}
+                    <h2> <strike>ราคาปกติ {{ product.normal_price|cut:".0" }} บาท</strike>  </h2>
+                    <h2 style="color: red;"> มีส่วนลดให้ เหลือเพียง {{ product.price1|cut:".0" }} บาท </h2>
+                    {% else %}
+                    <h2> ราคาปกติ {{ product.normal_price|cut:".0" }} บาท  </h2>
+                    {% endif %}
+                </div> 
+
+                <div class="container border border-dark p-3 my-3">
+                  <div class="form-group">
+                    <label for="name">จำนวน{{ product.unit }}</label>
+                    <input type="number" class="form-control" id="count" name="count" value="1" style="width: 100px;" required>
+                  </div>
+                  
+                  <input type="hidden" id="buyer_price" name="buyer_price" value="0">
+                  <input type="hidden" id="shipping_cost" name="shipping_cost" value="0">
+          
+                  <h5>ค่าสินค้า: <span id="product_total"></span> บาท</h5>
+                  <h5>ค่าจัดส่ง: <span id="shipping_total"></span> บาท</h5>
+                  <h3>ยอดรวมทั้งหมด: <span id="all_total" style="color: green;"></span> บาท</h3>
+                </div>
+                <hr>
+                </article>
+              </main> 
+          </div>  
+      </div> 
+<div class="py-5 text-left">
+        <p class="lead">{{ product.detail | safe }}</p>
+      </div>
+
+      <div class="row g-5 text-left">
+        <div class="col-md-5 col-lg-4 order-md-last">
+			{% if product.normal_price > 0 %}
+				<div class="">
+					<h5>วิธีการชำระเงิน</h5>
+						{% if product.slug == 'not-admin' %}
+							<div class="container border p-3 rounded mt-2">
+								<h6>โอนผ่าน Promptpay</h6>
+							</div>
+							<div class="container border p-3 rounded mt-2">
+								<h6>Scan QR Code ผ่าน app ธนาคาร</h6>
+								<div class="qr-code img-responsive">
+									<img src="https://promptpay.io/0105565133253/{{product.price1}}" id="qrcode_frame" frameborder="0" width="auto" height="auto"/>
+								</div>
+							</div>
+						{% else %}
+							<div class="container border p-3 rounded mt-2">
+								<h6>โอนผ่าน Promptpay</h6>
+							</div>
+							<div class="container border p-3 rounded mt-2">
+								<h6>Scan QR Code ผ่าน app ธนาคาร</h6>
+								<div class="qr-code img-responsive">
+									<img src="https://promptpay.io/0105561008411/{{product.price1}}" id="qrcode_frame" frameborder="0" width="auto" height="auto"/>
+								</div>
+							</div>
+						{% endif %}
+				</div>
+			{% endif %}
+        </div>
+
+
+        <div class="col-md-7 col-lg-8">
+          <h1 class="mb-3">ที่อยู่จัดส่ง</h1>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label for="first_name" class="form-label">ชื่อ</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" placeholder="ชื่อจริง" value="" required>
+                <div class="invalid-feedback">กรอกข้อมูลแล้ว</div>
+				<div class="invalid-feedback">จำเป็นต้องกรอก</div>
+              </div>
+			  
+              <div class="col-sm-6">
+                <label for="last_name" class="form-label">นามสกุล</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" placeholder="นามสกุล" value="" required>
+                <div class="invalid-feedback">กรอกข้อมูลแล้ว</div>
+              </div>
+  
+			  <div class="col-12">
+                <label for="tel" class="form-label">เบอร์โทรศัพท์ <span class="text-body-secondary">(Optional)</span></label>
+                <input type="text" class="form-control" id="tel" name="tel" placeholder="เบอร์โทรศัพท์">
+                <div class="invalid-feedback"> กรอกข้อมูลแล้ว</div>
+              </div>
+ 
+              <div class="col-12">
+                <label for="email" class="form-label">อิเมล์ <span class="text-body-secondary">(Optional)</span></label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="ที่อยู่อิเมล์">
+                <div class="invalid-feedback">กรอกข้อมูลแล้ว</div>
+              </div>
+
+ 
+              <div class="col-12">
+                <label for="address" class="form-label">ที่อยู่</label>
+                <input type="text" class="form-control" id="address" name="address" placeholder="ที่อยู่" required>
+                <div class="invalid-feedback">กรอกข้อมูลแล้ว</div>
+              </div>
+
+  			    <div class="form-group">
+					<div class="container border border-dark p-3">
+						<p>รายละเอียดบัญชีที่โอน</p>
+						<hr>
+						<label for="upload_slip">อัพโหลดสลิป</label>
+						<input type="file" class="form-control" id="upload_slip" name="upload_slip" accept="image/*" required>
+						<div class="valid-feedback">อัพโหลดแล้ว</div>
+						<div class="invalid-feedback">จำเป็นต้องอัพโหลด</div>
+					</div>
+        	  </div>
+            </div>
+  
+            <hr class="my-4">
+            <button class="w-100 btn btn-primary btn-lg" type="submit">สั่งซื้อ</button>
+        
+        </div>
+      </div>
+	</form>
+<div style="padding-top: 100px;"></div>
+
+<div class="container my-5">
+  <div class="position-relative p-5 text-center text-muted bg-body border border-dashed rounded-5">
+      <span style="color: red;">!!! กรุณาถ่ายภาพหน้านี้เก็บไว้เป็นหลักฐา !!!</span><br><br>
+    เลขที่อ้างอิง <span style="color: tomato;"></span>
+
+    <p class="col-lg-6 mx-auto mb-4">
+      หากมีความคืบหน้าทีมงานจะรีบติดต่อท่านทางอีเมล หากมีข้อสงสัยให้ติดต่อ
+    </p>
+    <h4 style="font-style: bold; color: black;"> รายละเอียด: </h4>
+      <h5>สินค้า:</h5>
+      <h5>จำนวน:  </h5>
+      <h5>ราคาสินค้า: <span id="book_total"></span> บาท</h5>
+      <h5>ค่าส่ง: <span id="shipping_total"></span> บาท</h5>
+      <br>
+      <h4>รวม: <span id="all_total"></span> บาท</h4>
+      <br>
+
+    <a href=""><img src="" alt="" width="400" class=" border border-dark"></a> 
+    <p>--------------------------------------------</p>
+      <h4 style="font-style: bold; color: black;"> ช้อมูลผู้ซื้อ: </h4>
+      <h5>ชื่อ: </h5>
+      <h5>Email: </h5>
+      <h5>เบอร์โทร: </h5>
+      <h5>ที่อยู่: </h5>
+  </div>
+</div>
+
+
+<script>
+    var productprice = parseFloat('{{ product_price }}')
+    var shippingcost = parseFloat('{{ product.shipping_cost }}')
+  
+    function onChange(e){
+      if (e.target.value <= 0){
+        e.target.value = 1
+      }else {
+        settotal(e.target.value)
+      }
+    
+    }
+  
+ 
+    function settotal(count){
+      var product_total = productprice * count;
+      document.getElementById('product_total').innerText = product_total;
+      document.getElementById('buyer_price').value = product_total;
+  
+      var shipping_total = shippingcost * count;
+      document.getElementById('shipping_total').innerText = shipping_total;
+      document.getElementById('shipping_cost').value = shipping_total;
+  
+      var all_total = product_total + shipping_total;
+      document.getElementById('all_total').innerText = all_total;
+    }
+  
+    function run(){
+      $('#count')[0].addEventListener('change', onChange)
+      settotal(1);
+  
+      [...$('.img-select')].forEach((elem) => {
+        elem.addEventListener('click', onImgSelect)
+      })
+  
+      $('#btn-prev')[0].addEventListener('click', onImgPrev)
+      $('#btn-next')[0].addEventListener('mousedown', onImgNext)
+    }
+ 
+    run()
+</script> {% endcomment %}
+
+
